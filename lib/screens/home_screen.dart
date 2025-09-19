@@ -156,7 +156,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                           width: 168,
                           height: 52,
 
-                          alignment: Alignment.topCenter,
+                          alignment: Alignment.center,
+
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
@@ -195,7 +196,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                           point: LatLng(s.lat, s.lng),
                           width: 168,
                           height: 52,
-                          alignment: Alignment.topCenter,
+                          alignment: Alignment.center,
+
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
@@ -526,8 +528,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
   }
 
   ///
+  List<TokyoStationModel> _uniqueStations(List<TokyoStationModel> input) {
+    final Map<String, List<TokyoStationModel>> map = <String, List<TokyoStationModel>>{};
+    for (final TokyoStationModel s in input) {
+      map.putIfAbsent(s.stationName, () => <TokyoStationModel>[]).add(s);
+    }
+
+    final List<TokyoStationModel> result = <TokyoStationModel>[];
+
+    for (final MapEntry<String, List<TokyoStationModel>> entry in map.entries) {
+      if (entry.value.length == 1) {
+        result.add(entry.value.first);
+      } else {
+        final double avgLat =
+            entry.value.map((TokyoStationModel e) => e.lat).reduce((double a, double b) => a + b) / entry.value.length;
+
+        final double avgLng =
+            entry.value.map((TokyoStationModel e) => e.lng).reduce((double a, double b) => a + b) / entry.value.length;
+
+        result.add(TokyoStationModel(id: '', stationName: entry.key, address: '', lat: avgLat, lng: avgLng));
+      }
+    }
+    return result;
+  }
+
+  ///
   List<TokyoStationModel> _stationsIn(TokyoMunicipalModel r) {
     final List<TokyoStationModel> list = <TokyoStationModel>[];
+
     appParamState.keepTokyoStationMap.forEach((String key, List<TokyoStationModel> value) {
       // ignore: prefer_foreach
       for (final TokyoStationModel element in value) {
@@ -535,7 +563,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
       }
     });
 
-    return list.where((TokyoStationModel s) => _pointInMunicipality(s.lat, s.lng, r)).toList();
+    final List<TokyoStationModel> uniqueStations = _uniqueStations(list);
+
+    return uniqueStations.where((TokyoStationModel s) => _pointInMunicipality(s.lat, s.lng, r)).toList();
   }
 
   ///
