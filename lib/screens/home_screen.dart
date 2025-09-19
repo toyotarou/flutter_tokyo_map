@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../controllers/controllers_mixin.dart';
+import '../extensions/extensions.dart';
 import '../models/tokyo_municipal_model.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -15,6 +18,11 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<HomeScreen> {
+  final MapController mapController = MapController();
+
+  TokyoMunicipalModel? selectedTokyoMunicipal;
+
+  ///
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -34,10 +42,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
             Divider(color: Colors.white.withOpacity(0.4), thickness: 5),
 
             Expanded(child: displayTokyoMunicipalList()),
+
+            SizedBox(
+              height: context.screenSize.height * 0.6,
+
+              child: FlutterMap(
+                mapController: mapController,
+                options: const MapOptions(initialCenter: LatLng(35.718532, 139.586639), initialZoom: 10),
+
+                children: <Widget>[
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.step3_bbox_preview',
+                  ),
+
+                  if (selectedTokyoMunicipal != null) ...<Widget>[
+                    // ignore: always_specify_types
+                    PolygonLayer(
+                      polygons: <Polygon<Object>>[
+                        // ignore: always_specify_types
+                        Polygon(
+                          points: makeAreaPolygon(selectedTokyoMunicipal!),
+                          isFilled: true,
+                          color: const Color(0x33FF0000),
+                          borderColor: const Color(0xFFFF0000),
+                          borderStrokeWidth: 1.5,
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  ///
+  List<LatLng> makeAreaPolygon(TokyoMunicipalModel r) {
+    return <LatLng>[
+      LatLng(r.minLat, r.minLng),
+      LatLng(r.minLat, r.maxLng),
+      LatLng(r.maxLat, r.maxLng),
+      LatLng(r.maxLat, r.minLng),
+    ];
   }
 
   ///
@@ -56,6 +106,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
             crossAxisAlignment: CrossAxisAlignment.start,
 
             children: <Widget>[
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    selectedTokyoMunicipal = element;
+                  });
+                },
+                icon: const Icon(Icons.ac_unit),
+              ),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[Text(element.name), Text(element.vertexCount.toString())],
