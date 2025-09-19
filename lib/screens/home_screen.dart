@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../controllers/controllers_mixin.dart';
-import '../extensions/extensions.dart';
 import '../models/tokyo_municipal_model.dart';
 import 'parts/category_button.dart';
 
@@ -27,6 +26,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
   String _category = '区';
 
+  LatLngBounds? tokyoAllBounds;
+
   ///
   @override
   Widget build(BuildContext context) {
@@ -39,13 +40,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[Text('tokyo municipal list'), SizedBox.shrink()],
-            ),
-
-            Divider(color: Colors.white.withOpacity(0.4), thickness: 5),
-
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
               child: Wrap(
@@ -54,38 +48,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                   CatButton(
                     label: '23区',
                     selected: _category == '区',
-                    onTap: () => setState(() {
-                      _category = '区';
-                      selectedTokyoMunicipal = null;
-                    }),
+                    onTap: () {
+                      setState(() {
+                        _category = '区';
+                        selectedTokyoMunicipal = null;
+                      });
+
+                      if (tokyoAllBounds != null) {
+                        mapController.fitCamera(
+                          CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                        );
+                      }
+                    },
                   ),
 
                   CatButton(
                     label: '26市',
                     selected: _category == '市',
-                    onTap: () => setState(() {
-                      _category = '市';
-                      selectedTokyoMunicipal = null;
-                    }),
+                    onTap: () {
+                      setState(() {
+                        _category = '市';
+                        selectedTokyoMunicipal = null;
+                      });
+
+                      if (tokyoAllBounds != null) {
+                        mapController.fitCamera(
+                          CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                        );
+                      }
+                    },
                   ),
 
                   CatButton(
                     label: '町村',
                     selected: _category == '町村',
-                    onTap: () => setState(() {
-                      _category = '町村';
-                      selectedTokyoMunicipal = null;
-                    }),
+                    onTap: () {
+                      setState(() {
+                        _category = '町村';
+                        selectedTokyoMunicipal = null;
+                      });
+
+                      if (tokyoAllBounds != null) {
+                        mapController.fitCamera(
+                          CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                        );
+                      }
+                    },
                   ),
                 ],
               ),
             ),
 
-            Expanded(child: displayTokyoMunicipalList()),
+            SizedBox(height: 100, child: displayTokyoMunicipalList()),
 
-            SizedBox(
-              height: context.screenSize.height * 0.6,
-
+            Expanded(
               child: FlutterMap(
                 mapController: mapController,
                 options: const MapOptions(initialCenter: LatLng(35.718532, 139.586639), initialZoom: 10),
@@ -260,7 +276,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
     sortedTokyoMunicipalList = sortedByZOrder(appParamState.keepTokyoMunicipalList);
 
-    sortedTokyoMunicipalList = _applyCategoryOrder(sortedTokyoMunicipalList);
+    sortedTokyoMunicipalList = sortedByCategory(sortedTokyoMunicipalList);
+
+    tokyoAllBounds = makeTokyoBounds(sortedTokyoMunicipalList);
 
     final List<TokyoMunicipalModel> filtered = sortedTokyoMunicipalList.where((TokyoMunicipalModel r) {
       if (_category == '区') {
@@ -276,62 +294,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
     for (final TokyoMunicipalModel element in filtered) {
       list.add(
-        Container(
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.3))),
-          ),
-          padding: const EdgeInsets.all(5),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedTokyoMunicipal = element;
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+              final LatLngBounds bounds = LatLngBounds(
+                LatLng(element.minLat, element.minLng),
+                LatLng(element.maxLat, element.maxLng),
+              );
 
-            children: <Widget>[
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    selectedTokyoMunicipal = element;
+              mapController.fitCamera(CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(24)));
+            });
+          },
 
-                    final LatLngBounds bounds = LatLngBounds(
-                      LatLng(element.minLat, element.minLng),
-                      LatLng(element.maxLat, element.maxLng),
-                    );
-
-                    mapController.fitCamera(CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(24)));
-                  });
-                },
-                icon: const Icon(Icons.ac_unit),
-              ),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[Text(element.name), Text(element.vertexCount.toString())],
-              ),
-
-              Text(element.maxLat.toStringAsFixed(5)),
-              Text(element.minLng.toStringAsFixed(5)),
-
-              Text(element.maxLat.toStringAsFixed(5)),
-              Text(element.maxLng.toStringAsFixed(5)),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: CircleAvatar(child: Text(element.name, style: const TextStyle(fontSize: 10))),
           ),
         ),
       );
     }
 
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) => list[index],
-            childCount: list.length,
-          ),
-        ),
-      ],
+    return SizedBox(
+      height: 80,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(children: list),
+      ),
     );
   }
 
   ///
-  List<TokyoMunicipalModel> _applyCategoryOrder(List<TokyoMunicipalModel> list) {
+  List<TokyoMunicipalModel> sortedByCategory(List<TokyoMunicipalModel> list) {
     int pri(String n) {
       if (n.endsWith('区')) {
         return 0;
@@ -398,5 +393,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
     }
 
     return ps;
+  }
+
+  ///
+  LatLngBounds makeTokyoBounds(List<TokyoMunicipalModel> list) {
+    double? minLat, minLng, maxLat, maxLng;
+
+    for (final TokyoMunicipalModel r in list) {
+      minLat = (minLat == null) ? r.minLat : (r.minLat < minLat ? r.minLat : minLat);
+
+      maxLat = (maxLat == null) ? r.maxLat : (r.maxLat > maxLat ? r.maxLat : maxLat);
+
+      minLng = (minLng == null) ? r.minLng : (r.minLng < minLng ? r.minLng : minLng);
+
+      maxLng = (maxLng == null) ? r.maxLng : (r.maxLng > maxLng ? r.maxLng : maxLng);
+    }
+
+    return LatLngBounds(LatLng(minLat ?? 0, minLng ?? 0), LatLng(maxLat ?? 0, maxLng ?? 0));
   }
 }
