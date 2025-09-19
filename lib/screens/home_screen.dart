@@ -5,13 +5,22 @@ import 'package:latlong2/latlong.dart';
 
 import '../controllers/controllers_mixin.dart';
 import '../models/tokyo_municipal_model.dart';
+import '../models/tokyo_train_model.dart';
 import 'parts/category_button.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key, required this.tokyoMunicipalList, required this.tokyoMunicipalMap});
+  const HomeScreen({
+    super.key,
+    required this.tokyoMunicipalList,
+    required this.tokyoMunicipalMap,
+    required this.tokyoTrainList,
+    required this.tokyoStationMap,
+  });
 
   final List<TokyoMunicipalModel> tokyoMunicipalList;
   final Map<String, TokyoMunicipalModel> tokyoMunicipalMap;
+  final List<TokyoTrainModel> tokyoTrainList;
+  final Map<String, List<TokyoStationModel>> tokyoStationMap;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -34,6 +43,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       appParamNotifier.setKeepTokyoMunicipalList(list: widget.tokyoMunicipalList);
       appParamNotifier.setKeepTokyoMunicipalMap(map: widget.tokyoMunicipalMap);
+
+      appParamNotifier.setKeepTokyoTrainList(list: widget.tokyoTrainList);
+      appParamNotifier.setKeepTokyoStationMap(map: widget.tokyoStationMap);
     });
 
     return Scaffold(
@@ -49,6 +61,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                     label: '23区',
                     selected: _category == '区',
                     onTap: () {
+                      mapController.rotate(0);
+
                       setState(() {
                         _category = '区';
                         selectedTokyoMunicipal = null;
@@ -66,6 +80,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                     label: '26市',
                     selected: _category == '市',
                     onTap: () {
+                      mapController.rotate(0);
+
                       setState(() {
                         _category = '市';
                         selectedTokyoMunicipal = null;
@@ -83,6 +99,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                     label: '町村',
                     selected: _category == '町村',
                     onTap: () {
+                      mapController.rotate(0);
+
                       setState(() {
                         _category = '町村';
                         selectedTokyoMunicipal = null;
@@ -127,6 +145,84 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                   if (selectedTokyoMunicipal != null) ...<Widget>[
                     // ignore: always_specify_types
                     PolygonLayer(polygons: makeAreaPolygons(selectedTokyoMunicipal!)),
+                  ],
+
+                  if (selectedTokyoMunicipal != null) ...<Widget>[
+                    MarkerLayer(
+                      markers: _stationsIn(selectedTokyoMunicipal!).map((TokyoStationModel s) {
+                        return Marker(
+                          point: LatLng(s.lat, s.lng),
+
+                          width: 168,
+                          height: 52,
+
+                          alignment: Alignment.topCenter,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.92),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.black26),
+                                ),
+                                child: const DefaultTextStyle(
+                                  style: TextStyle(fontSize: 11, color: Colors.black),
+                                  child: Text('', maxLines: 1),
+                                ),
+                              ),
+
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList()..asMap().forEach((int i, Marker m) {}),
+                    ),
+                  ],
+
+                  if (selectedTokyoMunicipal != null) ...<Widget>[
+                    MarkerLayer(
+                      markers: _stationsIn(selectedTokyoMunicipal!).map((TokyoStationModel s) {
+                        return Marker(
+                          point: LatLng(s.lat, s.lng),
+                          width: 168,
+                          height: 52,
+                          alignment: Alignment.topCenter,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.92),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.black26),
+                                ),
+
+                                child: Text(
+                                  s.stationName,
+                                  style: const TextStyle(color: Colors.redAccent, fontSize: 11),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ],
                 ],
               ),
@@ -309,6 +405,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
       list.add(
         GestureDetector(
           onTap: () {
+            mapController.rotate(0);
+
             setState(() {
               selectedTokyoMunicipal = element;
 
@@ -425,5 +523,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
     }
 
     return LatLngBounds(LatLng(minLat ?? 0, minLng ?? 0), LatLng(maxLat ?? 0, maxLng ?? 0));
+  }
+
+  ///
+  List<TokyoStationModel> _stationsIn(TokyoMunicipalModel r) {
+    final List<TokyoStationModel> list = <TokyoStationModel>[];
+    appParamState.keepTokyoStationMap.forEach((String key, List<TokyoStationModel> value) {
+      // ignore: prefer_foreach
+      for (final TokyoStationModel element in value) {
+        list.add(element);
+      }
+    });
+
+    return list.where((TokyoStationModel s) => _pointInMunicipality(s.lat, s.lng, r)).toList();
+  }
+
+  ///
+  bool _pointInMunicipality(double lat, double lng, TokyoMunicipalModel r) {
+    for (final List<List<List<double>>> rings in r.polygons) {
+      if (rings.isEmpty) {
+        continue;
+      }
+
+      final List<List<double>> outer = rings.first;
+
+      if (_pointInRing(lat, lng, outer)) {
+        bool inHole = false;
+
+        for (int i = 1; i < rings.length; i++) {
+          if (_pointInRing(lat, lng, rings[i])) {
+            inHole = true;
+            break;
+          }
+        }
+
+        if (!inHole) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  ///
+  bool _pointInRing(double lat, double lng, List<List<double>> ring) {
+    bool inside = false;
+
+    for (int i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      final double xi = ring[i][1], yi = ring[i][0];
+
+      final double xj = ring[j][1], yj = ring[j][0];
+
+      final bool intersect =
+          ((xi > lat) != (xj > lat)) && (lng < (yj - yi) * (lat - xi) / ((xj - xi) == 0 ? 1e-12 : (xj - xi)) + yi);
+
+      if (intersect) {
+        inside = !inside;
+      }
+    }
+
+    return inside;
   }
 }
