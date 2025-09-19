@@ -22,6 +22,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
   TokyoMunicipalModel? selectedTokyoMunicipal;
 
+  List<TokyoMunicipalModel> sortedTokyoMunicipalList = <TokyoMunicipalModel>[];
+
   ///
   @override
   Widget build(BuildContext context) {
@@ -55,6 +57,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.step3_bbox_preview',
                   ),
+
+                  if (sortedTokyoMunicipalList.isNotEmpty) ...<Widget>[
+                    // ignore: always_specify_types
+                    PolygonLayer(
+                      polygons: sortedTokyoMunicipalList
+                          .expand(
+                            (TokyoMunicipalModel r) =>
+                                _toPolygonsWithColors(r, const Color(0x22000000), const Color(0x33000000)),
+                          )
+                          .toList(),
+                    ),
+                  ],
 
                   if (selectedTokyoMunicipal != null) ...<Widget>[
                     // ignore: always_specify_types
@@ -206,7 +220,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
   Widget displayTokyoMunicipalList() {
     final List<Widget> list = <Widget>[];
 
-    final List<TokyoMunicipalModel> sortedTokyoMunicipalList = sortedByZOrder(appParamState.keepTokyoMunicipalList);
+    sortedTokyoMunicipalList = sortedByZOrder(appParamState.keepTokyoMunicipalList);
+
+    sortedTokyoMunicipalList = _applyCategoryOrder(sortedTokyoMunicipalList);
 
     for (final TokyoMunicipalModel element in sortedTokyoMunicipalList) {
       list.add(
@@ -262,5 +278,75 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
         ),
       ],
     );
+  }
+
+  ///
+  List<TokyoMunicipalModel> _applyCategoryOrder(List<TokyoMunicipalModel> list) {
+    int pri(String n) {
+      if (n.endsWith('区')) {
+        return 0;
+      }
+
+      if (n.endsWith('市')) {
+        return 1;
+      }
+
+      return 2;
+    }
+
+    final List<TokyoMunicipalModel> out = List<TokyoMunicipalModel>.from(list);
+
+    out.sort((TokyoMunicipalModel a, TokyoMunicipalModel b) {
+      final int pa = pri(a.name), pb = pri(b.name);
+
+      if (pa != pb) {
+        return pa.compareTo(pb);
+      }
+
+      final int ka = a.zKey ?? 0, kb = b.zKey ?? 0;
+
+      if (ka != kb) {
+        return ka.compareTo(kb);
+      }
+
+      return a.name.compareTo(b.name);
+    });
+
+    return out;
+  }
+
+  ///
+  // ignore: always_specify_types
+  List<Polygon> _toPolygonsWithColors(TokyoMunicipalModel r, Color fill, Color stroke) {
+    // ignore: always_specify_types
+    final List<Polygon<Object>> ps = <Polygon>[];
+
+    for (final List<List<List<double>>> rings in r.polygons) {
+      if (rings.isEmpty) {
+        continue;
+      }
+
+      final List<LatLng> outer = rings.first.map((List<double> p) => LatLng(p[1], p[0])).toList();
+
+      final List<List<LatLng>> holes = <List<LatLng>>[];
+
+      for (int i = 1; i < rings.length; i++) {
+        holes.add(rings[i].map((List<double> p) => LatLng(p[1], p[0])).toList());
+      }
+
+      ps.add(
+        // ignore: always_specify_types
+        Polygon(
+          points: outer,
+          holePointsList: holes.isEmpty ? null : holes,
+          isFilled: true,
+          color: fill,
+          borderColor: stroke,
+          borderStrokeWidth: 1.0,
+        ),
+      );
+    }
+
+    return ps;
   }
 }
