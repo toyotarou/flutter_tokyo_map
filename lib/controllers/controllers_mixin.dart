@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '_get_data/temple/temple.dart';
 import '_get_data/tokyo_municipal/tokyo_municipal.dart';
 import '_get_data/tokyo_train/tokyo_train.dart';
 import 'app_param/app_param.dart';
@@ -22,6 +23,12 @@ mixin ControllersMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   TokyoTrainState get tokyoTrainState => ref.watch(tokyoTrainProvider);
 
   TokyoTrain get tokyoTrainNotifier => ref.read(tokyoTrainProvider.notifier);
+
+  //==========================================//
+
+  TempleState get templeState => ref.watch(templeProvider);
+
+  Temple get templeNotifier => ref.read(templeProvider.notifier);
 
   //==========================================//
 }

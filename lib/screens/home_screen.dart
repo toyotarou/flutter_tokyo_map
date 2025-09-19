@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../controllers/controllers_mixin.dart';
+import '../models/temple_model.dart';
 import '../models/tokyo_municipal_model.dart';
 import '../models/tokyo_train_model.dart';
 import 'parts/category_button.dart';
@@ -15,12 +16,18 @@ class HomeScreen extends ConsumerStatefulWidget {
     required this.tokyoMunicipalMap,
     required this.tokyoTrainList,
     required this.tokyoStationMap,
+    required this.templeList,
+    required this.templeMap,
   });
 
   final List<TokyoMunicipalModel> tokyoMunicipalList;
   final Map<String, TokyoMunicipalModel> tokyoMunicipalMap;
+
   final List<TokyoTrainModel> tokyoTrainList;
   final Map<String, List<TokyoStationModel>> tokyoStationMap;
+
+  final List<TempleModel> templeList;
+  final Map<String, TempleModel> templeMap;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -46,6 +53,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
       appParamNotifier.setKeepTokyoTrainList(list: widget.tokyoTrainList);
       appParamNotifier.setKeepTokyoStationMap(map: widget.tokyoStationMap);
+
+      appParamNotifier.setKeepTempleList(list: widget.templeList);
+      appParamNotifier.setKeepTempleMap(map: widget.templeMap);
     });
 
     return Scaffold(

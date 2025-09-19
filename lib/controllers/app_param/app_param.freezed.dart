@@ -24,6 +24,9 @@ mixin _$AppParamState {
       throw _privateConstructorUsedError;
   Map<String, List<TokyoStationModel>> get keepTokyoStationMap =>
       throw _privateConstructorUsedError;
+  List<TempleModel> get keepTempleList => throw _privateConstructorUsedError;
+  Map<String, TempleModel> get keepTempleMap =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of AppParamState
   /// with the given fields replaced by the non-null parameter values.
@@ -42,7 +45,9 @@ abstract class $AppParamStateCopyWith<$Res> {
       {List<TokyoMunicipalModel> keepTokyoMunicipalList,
       Map<String, TokyoMunicipalModel> keepTokyoMunicipalMap,
       List<TokyoTrainModel> keepTokyoTrainList,
-      Map<String, List<TokyoStationModel>> keepTokyoStationMap});
+      Map<String, List<TokyoStationModel>> keepTokyoStationMap,
+      List<TempleModel> keepTempleList,
+      Map<String, TempleModel> keepTempleMap});
 }
 
 /// @nodoc
@@ -64,6 +69,8 @@ class _$AppParamStateCopyWithImpl<$Res, $Val extends AppParamState>
     Object? keepTokyoMunicipalMap = null,
     Object? keepTokyoTrainList = null,
     Object? keepTokyoStationMap = null,
+    Object? keepTempleList = null,
+    Object? keepTempleMap = null,
   }) {
     return _then(_value.copyWith(
       keepTokyoMunicipalList: null == keepTokyoMunicipalList
@@ -82,6 +89,14 @@ class _$AppParamStateCopyWithImpl<$Res, $Val extends AppParamState>
           ? _value.keepTokyoStationMap
           : keepTokyoStationMap // ignore: cast_nullable_to_non_nullable
               as Map<String, List<TokyoStationModel>>,
+      keepTempleList: null == keepTempleList
+          ? _value.keepTempleList
+          : keepTempleList // ignore: cast_nullable_to_non_nullable
+              as List<TempleModel>,
+      keepTempleMap: null == keepTempleMap
+          ? _value.keepTempleMap
+          : keepTempleMap // ignore: cast_nullable_to_non_nullable
+              as Map<String, TempleModel>,
     ) as $Val);
   }
 }
@@ -98,7 +113,9 @@ abstract class _$$AppParamStateImplCopyWith<$Res>
       {List<TokyoMunicipalModel> keepTokyoMunicipalList,
       Map<String, TokyoMunicipalModel> keepTokyoMunicipalMap,
       List<TokyoTrainModel> keepTokyoTrainList,
-      Map<String, List<TokyoStationModel>> keepTokyoStationMap});
+      Map<String, List<TokyoStationModel>> keepTokyoStationMap,
+      List<TempleModel> keepTempleList,
+      Map<String, TempleModel> keepTempleMap});
 }
 
 /// @nodoc
@@ -118,6 +135,8 @@ class __$$AppParamStateImplCopyWithImpl<$Res>
     Object? keepTokyoMunicipalMap = null,
     Object? keepTokyoTrainList = null,
     Object? keepTokyoStationMap = null,
+    Object? keepTempleList = null,
+    Object? keepTempleMap = null,
   }) {
     return _then(_$AppParamStateImpl(
       keepTokyoMunicipalList: null == keepTokyoMunicipalList
@@ -136,6 +155,14 @@ class __$$AppParamStateImplCopyWithImpl<$Res>
           ? _value._keepTokyoStationMap
           : keepTokyoStationMap // ignore: cast_nullable_to_non_nullable
               as Map<String, List<TokyoStationModel>>,
+      keepTempleList: null == keepTempleList
+          ? _value._keepTempleList
+          : keepTempleList // ignore: cast_nullable_to_non_nullable
+              as List<TempleModel>,
+      keepTempleMap: null == keepTempleMap
+          ? _value._keepTempleMap
+          : keepTempleMap // ignore: cast_nullable_to_non_nullable
+              as Map<String, TempleModel>,
     ));
   }
 }
@@ -151,11 +178,16 @@ class _$AppParamStateImpl implements _AppParamState {
       final List<TokyoTrainModel> keepTokyoTrainList =
           const <TokyoTrainModel>[],
       final Map<String, List<TokyoStationModel>> keepTokyoStationMap =
-          const <String, List<TokyoStationModel>>{}})
+          const <String, List<TokyoStationModel>>{},
+      final List<TempleModel> keepTempleList = const <TempleModel>[],
+      final Map<String, TempleModel> keepTempleMap =
+          const <String, TempleModel>{}})
       : _keepTokyoMunicipalList = keepTokyoMunicipalList,
         _keepTokyoMunicipalMap = keepTokyoMunicipalMap,
         _keepTokyoTrainList = keepTokyoTrainList,
-        _keepTokyoStationMap = keepTokyoStationMap;
+        _keepTokyoStationMap = keepTokyoStationMap,
+        _keepTempleList = keepTempleList,
+        _keepTempleMap = keepTempleMap;
 
   final List<TokyoMunicipalModel> _keepTokyoMunicipalList;
   @override
@@ -197,9 +229,27 @@ class _$AppParamStateImpl implements _AppParamState {
     return EqualUnmodifiableMapView(_keepTokyoStationMap);
   }
 
+  final List<TempleModel> _keepTempleList;
+  @override
+  @JsonKey()
+  List<TempleModel> get keepTempleList {
+    if (_keepTempleList is EqualUnmodifiableListView) return _keepTempleList;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_keepTempleList);
+  }
+
+  final Map<String, TempleModel> _keepTempleMap;
+  @override
+  @JsonKey()
+  Map<String, TempleModel> get keepTempleMap {
+    if (_keepTempleMap is EqualUnmodifiableMapView) return _keepTempleMap;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_keepTempleMap);
+  }
+
   @override
   String toString() {
-    return 'AppParamState(keepTokyoMunicipalList: $keepTokyoMunicipalList, keepTokyoMunicipalMap: $keepTokyoMunicipalMap, keepTokyoTrainList: $keepTokyoTrainList, keepTokyoStationMap: $keepTokyoStationMap)';
+    return 'AppParamState(keepTokyoMunicipalList: $keepTokyoMunicipalList, keepTokyoMunicipalMap: $keepTokyoMunicipalMap, keepTokyoTrainList: $keepTokyoTrainList, keepTokyoStationMap: $keepTokyoStationMap, keepTempleList: $keepTempleList, keepTempleMap: $keepTempleMap)';
   }
 
   @override
@@ -214,7 +264,11 @@ class _$AppParamStateImpl implements _AppParamState {
             const DeepCollectionEquality()
                 .equals(other._keepTokyoTrainList, _keepTokyoTrainList) &&
             const DeepCollectionEquality()
-                .equals(other._keepTokyoStationMap, _keepTokyoStationMap));
+                .equals(other._keepTokyoStationMap, _keepTokyoStationMap) &&
+            const DeepCollectionEquality()
+                .equals(other._keepTempleList, _keepTempleList) &&
+            const DeepCollectionEquality()
+                .equals(other._keepTempleMap, _keepTempleMap));
   }
 
   @override
@@ -223,7 +277,9 @@ class _$AppParamStateImpl implements _AppParamState {
       const DeepCollectionEquality().hash(_keepTokyoMunicipalList),
       const DeepCollectionEquality().hash(_keepTokyoMunicipalMap),
       const DeepCollectionEquality().hash(_keepTokyoTrainList),
-      const DeepCollectionEquality().hash(_keepTokyoStationMap));
+      const DeepCollectionEquality().hash(_keepTokyoStationMap),
+      const DeepCollectionEquality().hash(_keepTempleList),
+      const DeepCollectionEquality().hash(_keepTempleMap));
 
   /// Create a copy of AppParamState
   /// with the given fields replaced by the non-null parameter values.
@@ -236,11 +292,12 @@ class _$AppParamStateImpl implements _AppParamState {
 
 abstract class _AppParamState implements AppParamState {
   const factory _AppParamState(
-          {final List<TokyoMunicipalModel> keepTokyoMunicipalList,
-          final Map<String, TokyoMunicipalModel> keepTokyoMunicipalMap,
-          final List<TokyoTrainModel> keepTokyoTrainList,
-          final Map<String, List<TokyoStationModel>> keepTokyoStationMap}) =
-      _$AppParamStateImpl;
+      {final List<TokyoMunicipalModel> keepTokyoMunicipalList,
+      final Map<String, TokyoMunicipalModel> keepTokyoMunicipalMap,
+      final List<TokyoTrainModel> keepTokyoTrainList,
+      final Map<String, List<TokyoStationModel>> keepTokyoStationMap,
+      final List<TempleModel> keepTempleList,
+      final Map<String, TempleModel> keepTempleMap}) = _$AppParamStateImpl;
 
   @override
   List<TokyoMunicipalModel> get keepTokyoMunicipalList;
@@ -250,6 +307,10 @@ abstract class _AppParamState implements AppParamState {
   List<TokyoTrainModel> get keepTokyoTrainList;
   @override
   Map<String, List<TokyoStationModel>> get keepTokyoStationMap;
+  @override
+  List<TempleModel> get keepTempleList;
+  @override
+  Map<String, TempleModel> get keepTempleMap;
 
   /// Create a copy of AppParamState
   /// with the given fields replaced by the non-null parameter values.
