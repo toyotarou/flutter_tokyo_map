@@ -17,7 +17,9 @@ class CatButton extends StatelessWidget {
         side: BorderSide(color: color),
         foregroundColor: color,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        backgroundColor: Colors.white.withValues(alpha: 0.4),
       ),
+
       child: Text(label),
     );
   }

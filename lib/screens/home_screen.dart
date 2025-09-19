@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../controllers/controllers_mixin.dart';
+import '../extensions/extensions.dart';
 import '../models/temple_model.dart';
 import '../models/tokyo_municipal_model.dart';
 import '../models/tokyo_train_model.dart';
@@ -59,105 +61,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
     });
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('TOKYO MAP'),
+        centerTitle: true,
+
+        actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              appParamNotifier.setSelectedMarkerDisplayKind(kind: 'station');
+            },
+            icon: Icon(
+              Icons.train,
+              color: (appParamState.selectedMarkerDisplayKind == 'station')
+                  ? Colors.yellowAccent.withValues(alpha: 0.6)
+                  : Colors.white.withValues(alpha: 0.6),
+            ),
+          ),
+
+          IconButton(
+            onPressed: () {
+              appParamNotifier.setSelectedMarkerDisplayKind(kind: 'temple');
+            },
+            icon: Icon(
+              FontAwesomeIcons.toriiGate,
+              color: (appParamState.selectedMarkerDisplayKind == 'temple')
+                  ? Colors.yellowAccent.withValues(alpha: 0.6)
+                  : Colors.white.withValues(alpha: 0.6),
+            ),
+          ),
+        ],
+      ),
+
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
-              child: Wrap(
-                spacing: 8,
-                children: <Widget>[
-                  CatButton(
-                    label: '23区',
-                    selected: _category == '区',
-                    onTap: () {
-                      mapController.rotate(0);
+            FlutterMap(
+              mapController: mapController,
+              options: const MapOptions(initialCenter: LatLng(35.718532, 139.586639), initialZoom: 10),
 
-                      setState(() {
-                        _category = '区';
-                        selectedTokyoMunicipal = null;
-                      });
+              children: <Widget>[
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.example.step3_bbox_preview',
+                ),
 
-                      if (tokyoAllBounds != null) {
-                        mapController.fitCamera(
-                          CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
-                        );
-                      }
-                    },
-                  ),
-
-                  CatButton(
-                    label: '26市',
-                    selected: _category == '市',
-                    onTap: () {
-                      mapController.rotate(0);
-
-                      setState(() {
-                        _category = '市';
-                        selectedTokyoMunicipal = null;
-                      });
-
-                      if (tokyoAllBounds != null) {
-                        mapController.fitCamera(
-                          CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
-                        );
-                      }
-                    },
-                  ),
-
-                  CatButton(
-                    label: '町村',
-                    selected: _category == '町村',
-                    onTap: () {
-                      mapController.rotate(0);
-
-                      setState(() {
-                        _category = '町村';
-                        selectedTokyoMunicipal = null;
-                      });
-
-                      if (tokyoAllBounds != null) {
-                        mapController.fitCamera(
-                          CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
-                        );
-                      }
-                    },
+                if (sortedTokyoMunicipalList.isNotEmpty) ...<Widget>[
+                  // ignore: always_specify_types
+                  PolygonLayer(
+                    polygons: sortedTokyoMunicipalList
+                        .expand(
+                          (TokyoMunicipalModel r) =>
+                              _toPolygonsWithColors(r, const Color(0x22000000), const Color(0x33000000)),
+                        )
+                        .toList(),
                   ),
                 ],
-              ),
-            ),
 
-            SizedBox(height: 100, child: displayTokyoMunicipalList()),
+                if (selectedTokyoMunicipal != null) ...<Widget>[
+                  // ignore: always_specify_types
+                  PolygonLayer(polygons: makeAreaPolygons(selectedTokyoMunicipal!)),
+                ],
 
-            Expanded(
-              child: FlutterMap(
-                mapController: mapController,
-                options: const MapOptions(initialCenter: LatLng(35.718532, 139.586639), initialZoom: 10),
-
-                children: <Widget>[
-                  TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.example.step3_bbox_preview',
-                  ),
-
-                  if (sortedTokyoMunicipalList.isNotEmpty) ...<Widget>[
-                    // ignore: always_specify_types
-                    PolygonLayer(
-                      polygons: sortedTokyoMunicipalList
-                          .expand(
-                            (TokyoMunicipalModel r) =>
-                                _toPolygonsWithColors(r, const Color(0x22000000), const Color(0x33000000)),
-                          )
-                          .toList(),
-                    ),
-                  ],
-
-                  if (selectedTokyoMunicipal != null) ...<Widget>[
-                    // ignore: always_specify_types
-                    PolygonLayer(polygons: makeAreaPolygons(selectedTokyoMunicipal!)),
-                  ],
-
-                  if (selectedTokyoMunicipal != null) ...<Widget>[
+                if (selectedTokyoMunicipal != null) ...<Widget>[
+                  if (appParamState.selectedMarkerDisplayKind == 'station') ...<Widget>[
                     MarkerLayer(
                       markers: _stationsIn(selectedTokyoMunicipal!).map((TokyoStationModel s) {
                         return Marker(
@@ -197,9 +163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                         );
                       }).toList()..asMap().forEach((int i, Marker m) {}),
                     ),
-                  ],
 
-                  if (selectedTokyoMunicipal != null) ...<Widget>[
                     MarkerLayer(
                       markers: _stationsIn(selectedTokyoMunicipal!).map((TokyoStationModel s) {
                         return Marker(
@@ -236,6 +200,89 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                       }).toList(),
                     ),
                   ],
+                ],
+              ],
+            ),
+
+            Container(
+              height: 140,
+              decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4)),
+              child: Column(
+                children: <Widget>[
+                  SizedBox(width: context.screenSize.width),
+
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+                    child: Wrap(
+                      spacing: 8,
+                      children: <Widget>[
+                        CatButton(
+                          label: '23区',
+                          selected: _category == '区',
+                          onTap: () {
+                            mapController.rotate(0);
+
+                            setState(() {
+                              _category = '区';
+                              selectedTokyoMunicipal = null;
+                            });
+
+                            if (tokyoAllBounds != null) {
+                              mapController.fitCamera(
+                                CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                              );
+                            }
+
+                            appParamNotifier.setSelectedMunicipal(municipal: '');
+                          },
+                        ),
+
+                        CatButton(
+                          label: '26市',
+                          selected: _category == '市',
+                          onTap: () {
+                            mapController.rotate(0);
+
+                            setState(() {
+                              _category = '市';
+                              selectedTokyoMunicipal = null;
+                            });
+
+                            if (tokyoAllBounds != null) {
+                              mapController.fitCamera(
+                                CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                              );
+                            }
+
+                            appParamNotifier.setSelectedMunicipal(municipal: '');
+                          },
+                        ),
+
+                        CatButton(
+                          label: '町村',
+                          selected: _category == '町村',
+                          onTap: () {
+                            mapController.rotate(0);
+
+                            setState(() {
+                              _category = '町村';
+                              selectedTokyoMunicipal = null;
+                            });
+
+                            if (tokyoAllBounds != null) {
+                              mapController.fitCamera(
+                                CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                              );
+                            }
+
+                            appParamNotifier.setSelectedMunicipal(municipal: '');
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 60, child: displayTokyoMunicipalList()),
                 ],
               ),
             ),
@@ -419,6 +466,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
           onTap: () {
             mapController.rotate(0);
 
+            appParamNotifier.setSelectedMunicipal(municipal: element.name);
+
             setState(() {
               selectedTokyoMunicipal = element;
 
@@ -433,14 +482,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: CircleAvatar(child: Text(element.name, style: const TextStyle(fontSize: 10))),
+            child: CircleAvatar(
+              backgroundColor: (appParamState.selectedMunicipal == element.name)
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.4),
+              child: Text(
+                element.name,
+
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+
+                style: const TextStyle(fontSize: 10, color: Colors.black),
+              ),
+            ),
           ),
         ),
       );
     }
 
     return SizedBox(
-      height: 80,
+      height: 40,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(children: list),

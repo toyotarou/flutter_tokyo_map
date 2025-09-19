@@ -22,6 +22,11 @@ class AppParamState with _$AppParamState {
 
     @Default(<TempleModel>[]) List<TempleModel> keepTempleList,
     @Default(<String, TempleModel>{}) Map<String, TempleModel> keepTempleMap,
+
+    ///////////////////////////////////////
+    @Default('') String selectedMunicipal,
+
+    @Default('station') String selectedMarkerDisplayKind,
   }) = _AppParamState;
 }
 
@@ -53,4 +58,12 @@ class AppParam extends _$AppParam {
 
   ///
   void setKeepTempleMap({required Map<String, TempleModel> map}) => state = state.copyWith(keepTempleMap: map);
+
+  ///////////////////////////////////////
+
+  ///
+  void setSelectedMunicipal({required String municipal}) => state = state.copyWith(selectedMunicipal: municipal);
+
+  ///
+  void setSelectedMarkerDisplayKind({required String kind}) => state = state.copyWith(selectedMarkerDisplayKind: kind);
 }
