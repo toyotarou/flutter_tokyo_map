@@ -1,25 +1,28 @@
 class TokyoMunicipalModel {
-  const TokyoMunicipalModel(
+  TokyoMunicipalModel(
     this.name,
     this.vertexCount, {
-    this.minLat = 0,
-    this.minLng = 0,
-    this.maxLat = 0,
-    this.maxLng = 0,
-    this.centroidLat = 0,
-    this.centroidLng = 0,
+    required this.minLat,
+    required this.minLng,
+    required this.maxLat,
+    required this.maxLng,
+    required this.polygons,
+    required this.centroidLat,
+    required this.centroidLng,
+    this.zKey,
   });
 
   final String name;
 
-  final double minLat;
-  final double minLng;
+  final int vertexCount;
 
-  final double maxLat;
-  final double maxLng;
+  final double minLat, minLng, maxLat, maxLng;
+
+  final List<List<List<List<double>>>> polygons;
 
   final double centroidLat;
+
   final double centroidLng;
 
-  final int vertexCount;
+  int? zKey;
 }

@@ -70,22 +70,21 @@ class TokyoMunicipal extends _$TokyoMunicipal {
           continue;
         }
 
-        /////////////////// name
         final String name = (props['N03_004'] ?? props['name'] ?? '') as String;
-
         if (name.isEmpty) {
           continue;
         }
-        /////////////////// name
 
-        /////////////////// count
         final String? type = geom['type'] as String?;
+
         // ignore: always_specify_types
         final coords = geom['coordinates'];
 
         int count = 0;
 
         double? minLat, minLng, maxLat, maxLng;
+
+        final List<List<List<List<double>>>> polygons = <List<List<List<double>>>>[];
 
         double sumLat = 0, sumLng = 0;
 
@@ -95,44 +94,77 @@ class TokyoMunicipal extends _$TokyoMunicipal {
           count++;
 
           minLat = (minLat == null) ? lat : (lat < minLat! ? lat : minLat);
+
           maxLat = (maxLat == null) ? lat : (lat > maxLat! ? lat : maxLat);
+
           minLng = (minLng == null) ? lng : (lng < minLng! ? lng : minLng);
+
           maxLng = (maxLng == null) ? lng : (lng > maxLng! ? lng : maxLng);
 
           sumLat += lat;
+
           sumLng += lng;
 
           ptCnt++;
         }
 
         if (type == 'Polygon') {
+          final List<List<List<double>>> rings = <List<List<double>>>[];
+
           // ignore: always_specify_types
           for (final ring in (coords as List)) {
+            final List<List<double>> rr = <List<double>>[];
+
             // ignore: always_specify_types
             for (final pt in (ring as List)) {
               // ignore: avoid_dynamic_calls
-              addPoint((pt[0] as num).toDouble(), (pt[1] as num).toDouble());
+              final double lng = (pt[0] as num).toDouble();
+
+              // ignore: avoid_dynamic_calls
+              final double lat = (pt[1] as num).toDouble();
+
+              addPoint(lng, lat);
+
+              rr.add(<double>[lng, lat]);
             }
+
+            rings.add(rr);
           }
+
+          polygons.add(rings);
         } else if (type == 'MultiPolygon') {
           // ignore: always_specify_types
           for (final poly in (coords as List)) {
+            final List<List<List<double>>> rings = <List<List<double>>>[];
+
             // ignore: always_specify_types
             for (final ring in (poly as List)) {
+              final List<List<double>> rr = <List<double>>[];
+
               // ignore: always_specify_types
               for (final pt in (ring as List)) {
                 // ignore: avoid_dynamic_calls
-                addPoint((pt[0] as num).toDouble(), (pt[1] as num).toDouble());
+                final double lng = (pt[0] as num).toDouble();
+
+                // ignore: avoid_dynamic_calls
+                final double lat = (pt[1] as num).toDouble();
+
+                addPoint(lng, lat);
+
+                rr.add(<double>[lng, lat]);
               }
+
+              rings.add(rr);
             }
+
+            polygons.add(rings);
           }
         } else {
           continue;
         }
 
-        /////////////////// count
-
         final double centroidLat = ptCnt == 0 ? 0.0 : (sumLat / ptCnt);
+
         final double centroidLng = ptCnt == 0 ? 0.0 : (sumLng / ptCnt);
 
         final TokyoMunicipalModel val = TokyoMunicipalModel(
@@ -142,6 +174,7 @@ class TokyoMunicipal extends _$TokyoMunicipal {
           minLng: minLng ?? 0,
           maxLat: maxLat ?? 0,
           maxLng: maxLng ?? 0,
+          polygons: polygons,
           centroidLat: centroidLat,
           centroidLng: centroidLng,
         );

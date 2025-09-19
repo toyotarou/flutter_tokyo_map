@@ -58,18 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
                   if (selectedTokyoMunicipal != null) ...<Widget>[
                     // ignore: always_specify_types
-                    PolygonLayer(
-                      polygons: <Polygon<Object>>[
-                        // ignore: always_specify_types
-                        Polygon(
-                          points: makeAreaPolygon(selectedTokyoMunicipal!),
-                          isFilled: true,
-                          color: const Color(0x33FF0000),
-                          borderColor: const Color(0xFFFF0000),
-                          borderStrokeWidth: 1.5,
-                        ),
-                      ],
-                    ),
+                    PolygonLayer(polygons: makeAreaPolygons(selectedTokyoMunicipal!)),
                   ],
                 ],
               ),
@@ -78,6 +67,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
         ),
       ),
     );
+  }
+
+  ///
+  // ignore: always_specify_types
+  List<Polygon> makeAreaPolygons(TokyoMunicipalModel tokyoMunicipalModel) {
+    // ignore: always_specify_types
+    final List<Polygon<Object>> polygonList = <Polygon>[];
+
+    for (final List<List<List<double>>> rings in tokyoMunicipalModel.polygons) {
+      if (rings.isEmpty) {
+        continue;
+      }
+
+      final List<LatLng> outer = rings.first.map((List<double> p) => LatLng(p[1], p[0])).toList();
+
+      final List<List<LatLng>> holes = <List<LatLng>>[];
+
+      for (int i = 1; i < rings.length; i++) {
+        holes.add(rings[i].map((List<double> p) => LatLng(p[1], p[0])).toList());
+      }
+
+      polygonList.add(
+        // ignore: always_specify_types
+        Polygon(
+          points: outer,
+          holePointsList: holes.isEmpty ? null : holes,
+          isFilled: true,
+          color: const Color(0x33FF0000),
+          borderColor: const Color(0xFFFF0000),
+          borderStrokeWidth: 1.5,
+        ),
+      );
+    }
+
+    return polygonList;
   }
 
   ///
@@ -110,6 +134,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                 onPressed: () {
                   setState(() {
                     selectedTokyoMunicipal = element;
+
+                    final LatLngBounds bounds = LatLngBounds(
+                      LatLng(element.minLat, element.minLng),
+                      LatLng(element.maxLat, element.maxLng),
+                    );
+
+                    mapController.fitCamera(CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(24)));
                   });
                 },
                 icon: const Icon(Icons.ac_unit),
@@ -125,9 +156,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
               Text(element.maxLat.toStringAsFixed(5)),
               Text(element.maxLng.toStringAsFixed(5)),
-
-              Text(element.centroidLat.toStringAsFixed(5)),
-              Text(element.centroidLng.toStringAsFixed(5)),
             ],
           ),
         ),
