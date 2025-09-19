@@ -46,9 +46,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
     for (final TokyoMunicipalModel element in appParamState.keepTokyoMunicipalList) {
       list.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[Text(element.name), Text(element.vertexCount.toString())],
+        Container(
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.3))),
+          ),
+          padding: const EdgeInsets.all(5),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[Text(element.name), Text(element.vertexCount.toString())],
+              ),
+
+              Text(element.maxLat.toStringAsFixed(5)),
+              Text(element.minLng.toStringAsFixed(5)),
+
+              Text(element.maxLat.toStringAsFixed(5)),
+              Text(element.maxLng.toStringAsFixed(5)),
+
+              Text(element.centroidLat.toStringAsFixed(5)),
+              Text(element.centroidLng.toStringAsFixed(5)),
+            ],
+          ),
         ),
       );
     }

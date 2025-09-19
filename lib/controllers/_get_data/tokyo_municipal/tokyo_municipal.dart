@@ -84,38 +84,77 @@ class TokyoMunicipal extends _$TokyoMunicipal {
         final coords = geom['coordinates'];
 
         int count = 0;
+
+        double? minLat, minLng, maxLat, maxLng;
+
+        double sumLat = 0, sumLng = 0;
+
+        int ptCnt = 0;
+
+        void addPoint(double lng, double lat) {
+          count++;
+
+          minLat = (minLat == null) ? lat : (lat < minLat! ? lat : minLat);
+          maxLat = (maxLat == null) ? lat : (lat > maxLat! ? lat : maxLat);
+          minLng = (minLng == null) ? lng : (lng < minLng! ? lng : minLng);
+          maxLng = (maxLng == null) ? lng : (lng > maxLng! ? lng : maxLng);
+
+          sumLat += lat;
+          sumLng += lng;
+
+          ptCnt++;
+        }
+
         if (type == 'Polygon') {
-          // [rings][points][lng/lat]
           // ignore: always_specify_types
           for (final ring in (coords as List)) {
             // ignore: always_specify_types
-            count += (ring as List).length;
+            for (final pt in (ring as List)) {
+              // ignore: avoid_dynamic_calls
+              addPoint((pt[0] as num).toDouble(), (pt[1] as num).toDouble());
+            }
           }
         } else if (type == 'MultiPolygon') {
-          // [polygons][rings][points][lng/lat]
           // ignore: always_specify_types
           for (final poly in (coords as List)) {
             // ignore: always_specify_types
             for (final ring in (poly as List)) {
               // ignore: always_specify_types
-              count += (ring as List).length;
+              for (final pt in (ring as List)) {
+                // ignore: avoid_dynamic_calls
+                addPoint((pt[0] as num).toDouble(), (pt[1] as num).toDouble());
+              }
             }
           }
         } else {
-          // Point / MultiLineString などは今回は対象外
           continue;
         }
+
         /////////////////// count
 
-        list.add(TokyoMunicipalModel(name, count));
+        final double centroidLat = ptCnt == 0 ? 0.0 : (sumLat / ptCnt);
+        final double centroidLng = ptCnt == 0 ? 0.0 : (sumLng / ptCnt);
 
-        map[name] = TokyoMunicipalModel(name, count);
+        final TokyoMunicipalModel val = TokyoMunicipalModel(
+          name,
+          count,
+          minLat: minLat ?? 0,
+          minLng: minLng ?? 0,
+          maxLat: maxLat ?? 0,
+          maxLng: maxLng ?? 0,
+          centroidLat: centroidLat,
+          centroidLng: centroidLng,
+        );
+
+        list.add(val);
+
+        map[name] = val;
       }
 
       return state.copyWith(tokyoMunicipalList: list, tokyoMunicipalMap: map);
     } catch (e) {
       utility.showError('予期せぬエラーが発生しました');
-      rethrow; // これにより呼び出し元でキャッチできる
+      rethrow;
     }
   }
 
