@@ -271,14 +271,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
   }
 
   ///
+  bool _isMainland(TokyoMunicipalModel r) {
+    if (r.centroidLat < 35.0) {
+      return false;
+    }
+    if (r.centroidLng > 140.5) {
+      return false;
+    }
+    return true;
+  }
+
+  ///
   Widget displayTokyoMunicipalList() {
     final List<Widget> list = <Widget>[];
 
     sortedTokyoMunicipalList = sortedByZOrder(appParamState.keepTokyoMunicipalList);
 
     sortedTokyoMunicipalList = sortedByCategory(sortedTokyoMunicipalList);
-
-    tokyoAllBounds = makeTokyoBounds(sortedTokyoMunicipalList);
 
     final List<TokyoMunicipalModel> filtered = sortedTokyoMunicipalList.where((TokyoMunicipalModel r) {
       if (_category == '区') {
@@ -291,6 +300,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
       return !r.name.endsWith('区') && !r.name.endsWith('市');
     }).toList();
+
+    final List<TokyoMunicipalModel> backgroundRows = sortedTokyoMunicipalList.where(_isMainland).toList();
+
+    tokyoAllBounds = makeTokyoAllBounds(backgroundRows, fallback: sortedTokyoMunicipalList);
 
     for (final TokyoMunicipalModel element in filtered) {
       list.add(
@@ -396,10 +409,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
   }
 
   ///
-  LatLngBounds makeTokyoBounds(List<TokyoMunicipalModel> list) {
+  LatLngBounds makeTokyoAllBounds(List<TokyoMunicipalModel> list, {List<TokyoMunicipalModel>? fallback}) {
+    final List<TokyoMunicipalModel> src = list.isNotEmpty ? list : (fallback ?? list);
+
     double? minLat, minLng, maxLat, maxLng;
 
-    for (final TokyoMunicipalModel r in list) {
+    for (final TokyoMunicipalModel r in src) {
       minLat = (minLat == null) ? r.minLat : (r.minLat < minLat ? r.minLat : minLat);
 
       maxLat = (maxLat == null) ? r.maxLat : (r.maxLat > maxLat ? r.maxLat : maxLat);
