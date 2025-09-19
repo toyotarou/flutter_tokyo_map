@@ -1,25 +1,25 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_param.dart';
+part of 'tokyo_train.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appParamHash() => r'056dc8fa96737193af99effe8d4f2b8cc6e23c0f';
+String _$tokyoTrainHash() => r'f56d4ac7d7564e911a9358266994cced921c323f';
 
-/// See also [AppParam].
-@ProviderFor(AppParam)
-final appParamProvider =
-    AutoDisposeNotifierProvider<AppParam, AppParamState>.internal(
-  AppParam.new,
-  name: r'appParamProvider',
+/// See also [TokyoTrain].
+@ProviderFor(TokyoTrain)
+final tokyoTrainProvider =
+    NotifierProvider<TokyoTrain, TokyoTrainState>.internal(
+  TokyoTrain.new,
+  name: r'tokyoTrainProvider',
   debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$appParamHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$tokyoTrainHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AppParam = AutoDisposeNotifier<AppParamState>;
+typedef _$TokyoTrain = Notifier<TokyoTrainState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
