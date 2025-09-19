@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../controllers/controllers_mixin.dart';
 import '../extensions/extensions.dart';
 import '../models/tokyo_municipal_model.dart';
+import 'parts/category_button.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key, required this.tokyoMunicipalList, required this.tokyoMunicipalMap});
@@ -23,6 +24,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
   TokyoMunicipalModel? selectedTokyoMunicipal;
 
   List<TokyoMunicipalModel> sortedTokyoMunicipalList = <TokyoMunicipalModel>[];
+
+  String _category = '区';
 
   ///
   @override
@@ -42,6 +45,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
             ),
 
             Divider(color: Colors.white.withOpacity(0.4), thickness: 5),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+              child: Wrap(
+                spacing: 8,
+                children: <Widget>[
+                  CatButton(
+                    label: '23区',
+                    selected: _category == '区',
+                    onTap: () => setState(() {
+                      _category = '区';
+                      selectedTokyoMunicipal = null;
+                    }),
+                  ),
+
+                  CatButton(
+                    label: '26市',
+                    selected: _category == '市',
+                    onTap: () => setState(() {
+                      _category = '市';
+                      selectedTokyoMunicipal = null;
+                    }),
+                  ),
+
+                  CatButton(
+                    label: '町村',
+                    selected: _category == '町村',
+                    onTap: () => setState(() {
+                      _category = '町村';
+                      selectedTokyoMunicipal = null;
+                    }),
+                  ),
+                ],
+              ),
+            ),
 
             Expanded(child: displayTokyoMunicipalList()),
 
@@ -224,7 +262,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
     sortedTokyoMunicipalList = _applyCategoryOrder(sortedTokyoMunicipalList);
 
-    for (final TokyoMunicipalModel element in sortedTokyoMunicipalList) {
+    final List<TokyoMunicipalModel> filtered = sortedTokyoMunicipalList.where((TokyoMunicipalModel r) {
+      if (_category == '区') {
+        return r.name.endsWith('区');
+      }
+
+      if (_category == '市') {
+        return r.name.endsWith('市');
+      }
+
+      return !r.name.endsWith('区') && !r.name.endsWith('市');
+    }).toList();
+
+    for (final TokyoMunicipalModel element in filtered) {
       list.add(
         Container(
           decoration: BoxDecoration(
