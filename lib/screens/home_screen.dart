@@ -115,10 +115,100 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
   }
 
   ///
+  List<TokyoMunicipalModel> sortedByZOrder(List<TokyoMunicipalModel> list) {
+    if (list.isEmpty) {
+      return list;
+    }
+
+    double minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+
+    for (final TokyoMunicipalModel m in list) {
+      if (m.centroidLat < minLat) {
+        minLat = m.centroidLat;
+      }
+
+      if (m.centroidLat > maxLat) {
+        maxLat = m.centroidLat;
+      }
+
+      if (m.centroidLng < minLng) {
+        minLng = m.centroidLng;
+      }
+
+      if (m.centroidLng > maxLng) {
+        maxLng = m.centroidLng;
+      }
+    }
+
+    int morton(double lat, double lng) {
+      final double nx = _normalize(lng, minLng, maxLng);
+
+      final double ny = _normalize(lat, minLat, maxLat);
+
+      return _mortonKey16(nx, ny);
+    }
+
+    final List<TokyoMunicipalModel> out = List<TokyoMunicipalModel>.from(list);
+
+    for (final TokyoMunicipalModel m in out) {
+      m.zKey = morton(m.centroidLat, m.centroidLng);
+    }
+
+    out.sort((TokyoMunicipalModel a, TokyoMunicipalModel b) {
+      final int ka = a.zKey ?? 0, kb = b.zKey ?? 0;
+
+      if (ka != kb) {
+        return ka.compareTo(kb);
+      }
+
+      return a.name.compareTo(b.name);
+    });
+
+    return out;
+  }
+
+  ///
+  double _normalize(double v, double vmin, double vmax) {
+    final double d = vmax - vmin;
+
+    if (d == 0) {
+      return 0.5;
+    }
+
+    return ((v - vmin) / d).clamp(0.0, 1.0);
+  }
+
+  ///
+  int _mortonKey16(double normX, double normY) {
+    final int x = (normX * 65535).round();
+
+    final int y = (normY * 65535).round();
+
+    return _interleave16(x) | (_interleave16(y) << 1);
+  }
+
+  ///
+  int _interleave16(int n) {
+    int x = n & 0xFFFF;
+
+    x = (x | (x << 8)) & 0x00FF00FF;
+
+    x = (x | (x << 4)) & 0x0F0F0F0F;
+
+    x = (x | (x << 2)) & 0x33333333;
+
+    x = (x | (x << 1)) & 0x55555555;
+
+    return x;
+  }
+
+  ///
   Widget displayTokyoMunicipalList() {
     final List<Widget> list = <Widget>[];
 
-    for (final TokyoMunicipalModel element in appParamState.keepTokyoMunicipalList) {
+    final List<TokyoMunicipalModel> sortedTokyoMunicipalList = sortedByZOrder(appParamState.keepTokyoMunicipalList);
+
+    for (final TokyoMunicipalModel element in sortedTokyoMunicipalList) {
       list.add(
         Container(
           decoration: BoxDecoration(
