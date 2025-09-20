@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../models/temple_model.dart';
 import '../../models/tokyo_municipal_model.dart';
 
 import '../../models/tokyo_train_model.dart';
@@ -18,6 +19,14 @@ class AppParamState with _$AppParamState {
 
     @Default(<TokyoTrainModel>[]) List<TokyoTrainModel> keepTokyoTrainList,
     @Default(<String, List<TokyoStationModel>>{}) Map<String, List<TokyoStationModel>> keepTokyoStationMap,
+
+    @Default(<TempleModel>[]) List<TempleModel> keepTempleList,
+    @Default(<String, TempleModel>{}) Map<String, TempleModel> keepTempleMap,
+
+    ///////////////////////////////////////
+    @Default('') String selectedMunicipal,
+
+    @Default('station') String selectedMarkerDisplayKind,
   }) = _AppParamState;
 }
 
@@ -43,4 +52,18 @@ class AppParam extends _$AppParam {
   ///
   void setKeepTokyoStationMap({required Map<String, List<TokyoStationModel>> map}) =>
       state = state.copyWith(keepTokyoStationMap: map);
+
+  ///
+  void setKeepTempleList({required List<TempleModel> list}) => state = state.copyWith(keepTempleList: list);
+
+  ///
+  void setKeepTempleMap({required Map<String, TempleModel> map}) => state = state.copyWith(keepTempleMap: map);
+
+  ///////////////////////////////////////
+
+  ///
+  void setSelectedMunicipal({required String municipal}) => state = state.copyWith(selectedMunicipal: municipal);
+
+  ///
+  void setSelectedMarkerDisplayKind({required String kind}) => state = state.copyWith(selectedMarkerDisplayKind: kind);
 }
