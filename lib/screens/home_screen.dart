@@ -123,6 +123,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                 ],
 
                 if (selectedTokyoMunicipal != null) ...<Widget>[
+                  /////////////////////////////////////////////////////////////////////// station
                   if (appParamState.selectedMarkerDisplayKind == 'station') ...<Widget>[
                     MarkerLayer(
                       markers: _stationsIn(selectedTokyoMunicipal!).map((TokyoStationModel s) {
@@ -200,6 +201,86 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                       }).toList(),
                     ),
                   ],
+
+                  /////////////////////////////////////////////////////////////////////// station
+
+                  /////////////////////////////////////////////////////////////////////// temple
+                  if (appParamState.selectedMarkerDisplayKind == 'temple') ...<Widget>[
+                    MarkerLayer(
+                      markers: _templesIn(selectedTokyoMunicipal!).map((TempleDataModel t) {
+                        return Marker(
+                          point: LatLng(t.latitude.toDouble(), t.longitude.toDouble()),
+
+                          width: 168,
+                          height: 52,
+
+                          alignment: Alignment.center,
+
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.92),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.black26),
+                                ),
+                                child: const DefaultTextStyle(
+                                  style: TextStyle(fontSize: 11, color: Colors.black),
+                                  child: Text('', maxLines: 1),
+                                ),
+                              ),
+
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList()..asMap().forEach((int i, Marker m) {}),
+                    ),
+
+                    MarkerLayer(
+                      markers: _templesIn(selectedTokyoMunicipal!).map((TempleDataModel t) {
+                        return Marker(
+                          point: LatLng(t.latitude.toDouble(), t.longitude.toDouble()),
+                          width: 168,
+                          height: 52,
+                          alignment: Alignment.center,
+
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.92),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.black26),
+                                ),
+
+                                child: Text(t.name, style: const TextStyle(color: Colors.redAccent, fontSize: 11)),
+                              ),
+                              const SizedBox(height: 2),
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+
+                  /////////////////////////////////////////////////////////////////////// temple
                 ],
               ],
             ),
@@ -598,6 +679,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
     return LatLngBounds(LatLng(minLat ?? 0, minLng ?? 0), LatLng(maxLat ?? 0, maxLng ?? 0));
   }
 
+  /////////////////////////////////////////////////////////////////////// station
+
+  ///
+  List<TokyoStationModel> _stationsIn(TokyoMunicipalModel r) {
+    final List<TokyoStationModel> list = <TokyoStationModel>[];
+
+    appParamState.keepTokyoStationMap.forEach((String key, List<TokyoStationModel> value) {
+      // ignore: prefer_foreach
+      for (final TokyoStationModel element in value) {
+        list.add(element);
+      }
+    });
+
+    final List<TokyoStationModel> uniqueStations = _uniqueStations(list);
+
+    return uniqueStations.where((TokyoStationModel s) => _pointInMunicipality(s.lat, s.lng, r)).toList();
+  }
+
   ///
   List<TokyoStationModel> _uniqueStations(List<TokyoStationModel> input) {
     final Map<String, List<TokyoStationModel>> map = <String, List<TokyoStationModel>>{};
@@ -623,21 +722,81 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
     return result;
   }
 
-  ///
-  List<TokyoStationModel> _stationsIn(TokyoMunicipalModel r) {
-    final List<TokyoStationModel> list = <TokyoStationModel>[];
+  /////////////////////////////////////////////////////////////////////// station
 
-    appParamState.keepTokyoStationMap.forEach((String key, List<TokyoStationModel> value) {
+  /////////////////////////////////////////////////////////////////////// temple
+
+  ///
+  List<TempleDataModel> _templesIn(TokyoMunicipalModel r) {
+    final List<TempleDataModel> list = <TempleDataModel>[];
+
+    appParamState.keepTempleMap.forEach((String key, TempleModel value) {
       // ignore: prefer_foreach
-      for (final TokyoStationModel element in value) {
+      for (final TempleDataModel element in value.templeDataList) {
         list.add(element);
       }
     });
 
-    final List<TokyoStationModel> uniqueStations = _uniqueStations(list);
+    final List<TempleDataModel> uniqueTemples = _uniqueTemples(list);
 
-    return uniqueStations.where((TokyoStationModel s) => _pointInMunicipality(s.lat, s.lng, r)).toList();
+    return uniqueTemples
+        .where((TempleDataModel t) => _pointInMunicipality(t.latitude.toDouble(), t.longitude.toDouble(), r))
+        .toList();
   }
+
+  ///
+  List<TempleDataModel> _uniqueTemples(List<TempleDataModel> input) {
+    final Map<String, List<TempleDataModel>> map = <String, List<TempleDataModel>>{};
+    for (final TempleDataModel t in input) {
+      map.putIfAbsent(t.name, () => <TempleDataModel>[]).add(t);
+    }
+
+    final List<TempleDataModel> result = <TempleDataModel>[];
+
+    for (final MapEntry<String, List<TempleDataModel>> entry in map.entries) {
+      if (entry.value.length == 1) {
+        result.add(entry.value.first);
+      } else {
+        final double avgLat = averageOf<TempleDataModel>(
+          entry.value,
+          (TempleDataModel e) => double.tryParse(e.latitude),
+        );
+
+        final double avgLng = averageOf<TempleDataModel>(
+          entry.value,
+          (TempleDataModel e) => double.tryParse(e.longitude),
+        );
+
+        result.add(
+          TempleDataModel(
+            name: entry.key,
+            address: '',
+            latitude: avgLat.toString(),
+            longitude: avgLng.toString(),
+            rank: '',
+          ),
+        );
+      }
+    }
+    return result;
+  }
+
+  ///
+  double averageOf<T>(Iterable<T> items, double? Function(T) selector) {
+    double sum = 0.0;
+    int count = 0;
+    // ignore: always_specify_types
+    for (final it in items) {
+      final double? v = selector(it);
+      if (v != null && v.isFinite) {
+        sum += v;
+        count++;
+      }
+    }
+    return count == 0 ? 0.0 : sum / count;
+  }
+
+  /////////////////////////////////////////////////////////////////////// temple
 
   ///
   bool _pointInMunicipality(double lat, double lng, TokyoMunicipalModel r) {
