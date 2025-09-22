@@ -177,22 +177,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.92),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.black26),
-                                ),
+                              Stack(
+                                children: <Widget>[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.92),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: Colors.black26),
+                                    ),
 
-                                child: Text(
-                                  t.name,
+                                    child: Text(
+                                      t.name,
 
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
 
-                                  style: const TextStyle(color: Colors.redAccent, fontSize: 11),
-                                ),
+                                      style: const TextStyle(color: Colors.redAccent, fontSize: 11),
+                                    ),
+                                  ),
+
+                                  Positioned(
+                                    child: Text(t.rank, style: const TextStyle(fontSize: 30, color: Colors.black)),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 2),
                               Container(
@@ -700,7 +708,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
             address: '',
             latitude: avgLat.toString(),
             longitude: avgLng.toString(),
-            rank: '',
+            rank: entry.value.first.rank,
           ),
         );
       }
