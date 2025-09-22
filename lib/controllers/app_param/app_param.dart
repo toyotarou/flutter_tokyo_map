@@ -27,6 +27,8 @@ class AppParamState with _$AppParamState {
     @Default('') String selectedMunicipal,
 
     @Default('station') String selectedMarkerDisplayKind,
+
+    @Default(<String>[]) List<String> selectedDisplayTempleRankList,
   }) = _AppParamState;
 }
 
@@ -66,4 +68,19 @@ class AppParam extends _$AppParam {
 
   ///
   void setSelectedMarkerDisplayKind({required String kind}) => state = state.copyWith(selectedMarkerDisplayKind: kind);
+
+  ///
+  void clearSelectedDisplayTempleRankList() => state = state.copyWith(selectedDisplayTempleRankList: <String>[]);
+
+  ///
+  void setSelectedDisplayTempleRankList({required String rank}) {
+    final List<String> list = <String>[...state.selectedDisplayTempleRankList];
+    if (list.contains(rank)) {
+      list.remove(rank);
+    } else {
+      list.add(rank);
+    }
+
+    state = state.copyWith(selectedDisplayTempleRankList: list);
+  }
 }

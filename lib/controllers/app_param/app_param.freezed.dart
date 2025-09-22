@@ -29,6 +29,8 @@ mixin _$AppParamState {
       throw _privateConstructorUsedError; ///////////////////////////////////////
   String get selectedMunicipal => throw _privateConstructorUsedError;
   String get selectedMarkerDisplayKind => throw _privateConstructorUsedError;
+  List<String> get selectedDisplayTempleRankList =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of AppParamState
   /// with the given fields replaced by the non-null parameter values.
@@ -51,7 +53,8 @@ abstract class $AppParamStateCopyWith<$Res> {
       List<TempleModel> keepTempleList,
       Map<String, TempleModel> keepTempleMap,
       String selectedMunicipal,
-      String selectedMarkerDisplayKind});
+      String selectedMarkerDisplayKind,
+      List<String> selectedDisplayTempleRankList});
 }
 
 /// @nodoc
@@ -77,6 +80,7 @@ class _$AppParamStateCopyWithImpl<$Res, $Val extends AppParamState>
     Object? keepTempleMap = null,
     Object? selectedMunicipal = null,
     Object? selectedMarkerDisplayKind = null,
+    Object? selectedDisplayTempleRankList = null,
   }) {
     return _then(_value.copyWith(
       keepTokyoMunicipalList: null == keepTokyoMunicipalList
@@ -111,6 +115,10 @@ class _$AppParamStateCopyWithImpl<$Res, $Val extends AppParamState>
           ? _value.selectedMarkerDisplayKind
           : selectedMarkerDisplayKind // ignore: cast_nullable_to_non_nullable
               as String,
+      selectedDisplayTempleRankList: null == selectedDisplayTempleRankList
+          ? _value.selectedDisplayTempleRankList
+          : selectedDisplayTempleRankList // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ) as $Val);
   }
 }
@@ -131,7 +139,8 @@ abstract class _$$AppParamStateImplCopyWith<$Res>
       List<TempleModel> keepTempleList,
       Map<String, TempleModel> keepTempleMap,
       String selectedMunicipal,
-      String selectedMarkerDisplayKind});
+      String selectedMarkerDisplayKind,
+      List<String> selectedDisplayTempleRankList});
 }
 
 /// @nodoc
@@ -155,6 +164,7 @@ class __$$AppParamStateImplCopyWithImpl<$Res>
     Object? keepTempleMap = null,
     Object? selectedMunicipal = null,
     Object? selectedMarkerDisplayKind = null,
+    Object? selectedDisplayTempleRankList = null,
   }) {
     return _then(_$AppParamStateImpl(
       keepTokyoMunicipalList: null == keepTokyoMunicipalList
@@ -189,6 +199,10 @@ class __$$AppParamStateImplCopyWithImpl<$Res>
           ? _value.selectedMarkerDisplayKind
           : selectedMarkerDisplayKind // ignore: cast_nullable_to_non_nullable
               as String,
+      selectedDisplayTempleRankList: null == selectedDisplayTempleRankList
+          ? _value._selectedDisplayTempleRankList
+          : selectedDisplayTempleRankList // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -209,13 +223,15 @@ class _$AppParamStateImpl implements _AppParamState {
       final Map<String, TempleModel> keepTempleMap =
           const <String, TempleModel>{},
       this.selectedMunicipal = '',
-      this.selectedMarkerDisplayKind = 'station'})
+      this.selectedMarkerDisplayKind = 'station',
+      final List<String> selectedDisplayTempleRankList = const <String>[]})
       : _keepTokyoMunicipalList = keepTokyoMunicipalList,
         _keepTokyoMunicipalMap = keepTokyoMunicipalMap,
         _keepTokyoTrainList = keepTokyoTrainList,
         _keepTokyoStationMap = keepTokyoStationMap,
         _keepTempleList = keepTempleList,
-        _keepTempleMap = keepTempleMap;
+        _keepTempleMap = keepTempleMap,
+        _selectedDisplayTempleRankList = selectedDisplayTempleRankList;
 
   final List<TokyoMunicipalModel> _keepTokyoMunicipalList;
   @override
@@ -282,10 +298,19 @@ class _$AppParamStateImpl implements _AppParamState {
   @override
   @JsonKey()
   final String selectedMarkerDisplayKind;
+  final List<String> _selectedDisplayTempleRankList;
+  @override
+  @JsonKey()
+  List<String> get selectedDisplayTempleRankList {
+    if (_selectedDisplayTempleRankList is EqualUnmodifiableListView)
+      return _selectedDisplayTempleRankList;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_selectedDisplayTempleRankList);
+  }
 
   @override
   String toString() {
-    return 'AppParamState(keepTokyoMunicipalList: $keepTokyoMunicipalList, keepTokyoMunicipalMap: $keepTokyoMunicipalMap, keepTokyoTrainList: $keepTokyoTrainList, keepTokyoStationMap: $keepTokyoStationMap, keepTempleList: $keepTempleList, keepTempleMap: $keepTempleMap, selectedMunicipal: $selectedMunicipal, selectedMarkerDisplayKind: $selectedMarkerDisplayKind)';
+    return 'AppParamState(keepTokyoMunicipalList: $keepTokyoMunicipalList, keepTokyoMunicipalMap: $keepTokyoMunicipalMap, keepTokyoTrainList: $keepTokyoTrainList, keepTokyoStationMap: $keepTokyoStationMap, keepTempleList: $keepTempleList, keepTempleMap: $keepTempleMap, selectedMunicipal: $selectedMunicipal, selectedMarkerDisplayKind: $selectedMarkerDisplayKind, selectedDisplayTempleRankList: $selectedDisplayTempleRankList)';
   }
 
   @override
@@ -309,7 +334,10 @@ class _$AppParamStateImpl implements _AppParamState {
                 other.selectedMunicipal == selectedMunicipal) &&
             (identical(other.selectedMarkerDisplayKind,
                     selectedMarkerDisplayKind) ||
-                other.selectedMarkerDisplayKind == selectedMarkerDisplayKind));
+                other.selectedMarkerDisplayKind == selectedMarkerDisplayKind) &&
+            const DeepCollectionEquality().equals(
+                other._selectedDisplayTempleRankList,
+                _selectedDisplayTempleRankList));
   }
 
   @override
@@ -322,7 +350,8 @@ class _$AppParamStateImpl implements _AppParamState {
       const DeepCollectionEquality().hash(_keepTempleList),
       const DeepCollectionEquality().hash(_keepTempleMap),
       selectedMunicipal,
-      selectedMarkerDisplayKind);
+      selectedMarkerDisplayKind,
+      const DeepCollectionEquality().hash(_selectedDisplayTempleRankList));
 
   /// Create a copy of AppParamState
   /// with the given fields replaced by the non-null parameter values.
@@ -342,7 +371,8 @@ abstract class _AppParamState implements AppParamState {
       final List<TempleModel> keepTempleList,
       final Map<String, TempleModel> keepTempleMap,
       final String selectedMunicipal,
-      final String selectedMarkerDisplayKind}) = _$AppParamStateImpl;
+      final String selectedMarkerDisplayKind,
+      final List<String> selectedDisplayTempleRankList}) = _$AppParamStateImpl;
 
   @override
   List<TokyoMunicipalModel> get keepTokyoMunicipalList;
@@ -361,6 +391,8 @@ abstract class _AppParamState implements AppParamState {
   String get selectedMunicipal;
   @override
   String get selectedMarkerDisplayKind;
+  @override
+  List<String> get selectedDisplayTempleRankList;
 
   /// Create a copy of AppParamState
   /// with the given fields replaced by the non-null parameter values.

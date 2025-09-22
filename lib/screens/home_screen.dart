@@ -68,6 +68,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
         actions: <Widget>[
           IconButton(
             onPressed: () {
+              appParamNotifier.clearSelectedDisplayTempleRankList();
+
               appParamNotifier.setSelectedMarkerDisplayKind(kind: 'station');
             },
             icon: Icon(
@@ -80,6 +82,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
           IconButton(
             onPressed: () {
+              appParamNotifier.clearSelectedDisplayTempleRankList();
+
               appParamNotifier.setSelectedMarkerDisplayKind(kind: 'temple');
             },
             icon: Icon(
@@ -168,49 +172,64 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                   if (appParamState.selectedMarkerDisplayKind == 'temple') ...<Widget>[
                     MarkerLayer(
                       markers: _templesIn(selectedTokyoMunicipal!).map((TempleDataModel t) {
-                        return Marker(
-                          point: LatLng(t.latitude.toDouble(), t.longitude.toDouble()),
-                          width: 168,
-                          height: 52,
-                          alignment: Alignment.center,
+                        bool flag = true;
 
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Stack(
-                                children: <Widget>[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.92),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: Colors.black26),
+                        if (appParamState.selectedDisplayTempleRankList.isNotEmpty) {
+                          if (!appParamState.selectedDisplayTempleRankList.contains(t.rank)) {
+                            flag = false;
+                          }
+                        }
+
+                        if (flag) {
+                          return Marker(
+                            point: LatLng(t.latitude.toDouble(), t.longitude.toDouble()),
+                            width: 168,
+                            height: 52,
+                            alignment: Alignment.center,
+
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Stack(
+                                  children: <Widget>[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.92),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: Colors.black26),
+                                      ),
+
+                                      child: Text(
+                                        t.name,
+
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+
+                                        style: const TextStyle(color: Colors.redAccent, fontSize: 11),
+                                      ),
                                     ),
 
-                                    child: Text(
-                                      t.name,
-
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-
-                                      style: const TextStyle(color: Colors.redAccent, fontSize: 11),
+                                    Positioned(
+                                      child: Text(t.rank, style: const TextStyle(fontSize: 30, color: Colors.black)),
                                     ),
-                                  ),
-
-                                  Positioned(
-                                    child: Text(t.rank, style: const TextStyle(fontSize: 30, color: Colors.black)),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
-                              ),
-                            ],
-                          ),
-                        );
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          return Marker(
+                            point: LatLng(t.latitude.toDouble(), t.longitude.toDouble()),
+                            child: const SizedBox.shrink(),
+                          );
+                        }
                       }).toList(),
                     ),
                   ],
@@ -220,87 +239,138 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
               ],
             ),
 
-            Container(
-              height: 140,
-              decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4)),
-              child: Column(
-                children: <Widget>[
-                  SizedBox(width: context.screenSize.width),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  height: 140,
+                  decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4)),
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(width: context.screenSize.width),
 
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
-                    child: Wrap(
-                      spacing: 8,
-                      children: <Widget>[
-                        CatButton(
-                          label: '23区',
-                          selected: _category == '区',
-                          onTap: () {
-                            mapController.rotate(0);
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+                        child: Wrap(
+                          spacing: 8,
+                          children: <Widget>[
+                            CatButton(
+                              label: '23区',
+                              selected: _category == '区',
+                              onTap: () {
+                                mapController.rotate(0);
 
-                            setState(() {
-                              _category = '区';
-                              selectedTokyoMunicipal = null;
-                            });
+                                appParamNotifier.clearSelectedDisplayTempleRankList();
 
-                            if (tokyoAllBounds != null) {
-                              mapController.fitCamera(
-                                CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
-                              );
-                            }
+                                setState(() {
+                                  _category = '区';
+                                  selectedTokyoMunicipal = null;
+                                });
 
-                            appParamNotifier.setSelectedMunicipal(municipal: '');
-                          },
+                                if (tokyoAllBounds != null) {
+                                  mapController.fitCamera(
+                                    CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                                  );
+                                }
+
+                                appParamNotifier.setSelectedMunicipal(municipal: '');
+                              },
+                            ),
+
+                            CatButton(
+                              label: '26市',
+                              selected: _category == '市',
+                              onTap: () {
+                                mapController.rotate(0);
+
+                                appParamNotifier.clearSelectedDisplayTempleRankList();
+
+                                setState(() {
+                                  _category = '市';
+                                  selectedTokyoMunicipal = null;
+                                });
+
+                                if (tokyoAllBounds != null) {
+                                  mapController.fitCamera(
+                                    CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                                  );
+                                }
+
+                                appParamNotifier.setSelectedMunicipal(municipal: '');
+                              },
+                            ),
+
+                            CatButton(
+                              label: '町村',
+                              selected: _category == '町村',
+                              onTap: () {
+                                mapController.rotate(0);
+
+                                appParamNotifier.clearSelectedDisplayTempleRankList();
+
+                                setState(() {
+                                  _category = '町村';
+                                  selectedTokyoMunicipal = null;
+                                });
+
+                                if (tokyoAllBounds != null) {
+                                  mapController.fitCamera(
+                                    CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
+                                  );
+                                }
+
+                                appParamNotifier.setSelectedMunicipal(municipal: '');
+                              },
+                            ),
+                          ],
                         ),
+                      ),
 
-                        CatButton(
-                          label: '26市',
-                          selected: _category == '市',
-                          onTap: () {
-                            mapController.rotate(0);
-
-                            setState(() {
-                              _category = '市';
-                              selectedTokyoMunicipal = null;
-                            });
-
-                            if (tokyoAllBounds != null) {
-                              mapController.fitCamera(
-                                CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
-                              );
-                            }
-
-                            appParamNotifier.setSelectedMunicipal(municipal: '');
-                          },
-                        ),
-
-                        CatButton(
-                          label: '町村',
-                          selected: _category == '町村',
-                          onTap: () {
-                            mapController.rotate(0);
-
-                            setState(() {
-                              _category = '町村';
-                              selectedTokyoMunicipal = null;
-                            });
-
-                            if (tokyoAllBounds != null) {
-                              mapController.fitCamera(
-                                CameraFit.bounds(bounds: tokyoAllBounds!, padding: const EdgeInsets.all(24)),
-                              );
-                            }
-
-                            appParamNotifier.setSelectedMunicipal(municipal: '');
-                          },
-                        ),
-                      ],
-                    ),
+                      SizedBox(height: 60, child: displayTokyoMunicipalList()),
+                    ],
                   ),
+                ),
 
-                  SizedBox(height: 60, child: displayTokyoMunicipalList()),
+                if (appParamState.selectedMarkerDisplayKind == 'temple') ...<Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      const SizedBox.shrink(),
+
+                      Container(
+                        margin: const EdgeInsets.all(5),
+
+                        decoration: BoxDecoration(
+                          color: Colors.orangeAccent.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: <String>['S', 'A', 'B', 'C'].map((String e) {
+                            return Padding(
+                              padding: const EdgeInsets.all(5),
+
+                              child: GestureDetector(
+                                onTap: () {
+                                  appParamNotifier.setSelectedDisplayTempleRankList(rank: e);
+                                },
+
+                                child: CircleAvatar(
+                                  backgroundColor: (appParamState.selectedDisplayTempleRankList.contains(e))
+                                      ? Colors.yellowAccent.withValues(alpha: 0.4)
+                                      : Colors.black.withValues(alpha: 0.4),
+
+                                  radius: 15,
+                                  child: Text(e),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-              ),
+              ],
             ),
           ],
         ),
@@ -481,6 +551,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
         GestureDetector(
           onTap: () {
             mapController.rotate(0);
+
+            appParamNotifier.clearSelectedDisplayTempleRankList();
 
             appParamNotifier.setSelectedMunicipal(municipal: element.name);
 
