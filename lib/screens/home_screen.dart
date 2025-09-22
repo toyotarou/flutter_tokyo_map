@@ -129,46 +129,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                       markers: _stationsIn(selectedTokyoMunicipal!).map((TokyoStationModel s) {
                         return Marker(
                           point: LatLng(s.lat, s.lng),
-
-                          width: 168,
-                          height: 52,
-
-                          alignment: Alignment.center,
-
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.92),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.black26),
-                                ),
-                                child: const DefaultTextStyle(
-                                  style: TextStyle(fontSize: 11, color: Colors.black),
-                                  child: Text('', maxLines: 1),
-                                ),
-                              ),
-
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList()..asMap().forEach((int i, Marker m) {}),
-                    ),
-
-                    MarkerLayer(
-                      markers: _stationsIn(selectedTokyoMunicipal!).map((TokyoStationModel s) {
-                        return Marker(
-                          point: LatLng(s.lat, s.lng),
                           width: 168,
                           height: 52,
                           alignment: Alignment.center,
@@ -210,46 +170,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                       markers: _templesIn(selectedTokyoMunicipal!).map((TempleDataModel t) {
                         return Marker(
                           point: LatLng(t.latitude.toDouble(), t.longitude.toDouble()),
-
-                          width: 168,
-                          height: 52,
-
-                          alignment: Alignment.center,
-
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.92),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.black26),
-                                ),
-                                child: const DefaultTextStyle(
-                                  style: TextStyle(fontSize: 11, color: Colors.black),
-                                  child: Text('', maxLines: 1),
-                                ),
-                              ),
-
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList()..asMap().forEach((int i, Marker m) {}),
-                    ),
-
-                    MarkerLayer(
-                      markers: _templesIn(selectedTokyoMunicipal!).map((TempleDataModel t) {
-                        return Marker(
-                          point: LatLng(t.latitude.toDouble(), t.longitude.toDouble()),
                           width: 168,
                           height: 52,
                           alignment: Alignment.center,
@@ -265,7 +185,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
                                   border: Border.all(color: Colors.black26),
                                 ),
 
-                                child: Text(t.name, style: const TextStyle(color: Colors.redAccent, fontSize: 11)),
+                                child: Text(
+                                  t.name,
+
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+
+                                  style: const TextStyle(color: Colors.redAccent, fontSize: 11),
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Container(
