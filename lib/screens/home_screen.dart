@@ -414,16 +414,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
   }
 
   ///
-  List<LatLng> makeAreaPolygon(TokyoMunicipalModel r) {
-    return <LatLng>[
-      LatLng(r.minLat, r.minLng),
-      LatLng(r.minLat, r.maxLng),
-      LatLng(r.maxLat, r.maxLng),
-      LatLng(r.maxLat, r.minLng),
-    ];
-  }
-
-  ///
   List<TokyoMunicipalModel> sortedByZOrder(List<TokyoMunicipalModel> list) {
     if (list.isEmpty) {
       return list;
@@ -701,7 +691,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
     final List<TokyoStationModel> uniqueStations = _uniqueStations(list);
 
-    return uniqueStations.where((TokyoStationModel s) => _pointInMunicipality(s.lat, s.lng, r)).toList();
+    return uniqueStations.where((TokyoStationModel s) => pointInMunicipality(s.lat, s.lng, r)).toList();
   }
 
   ///
@@ -747,7 +737,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
     final List<TempleDataModel> uniqueTemples = _uniqueTemples(list);
 
     return uniqueTemples
-        .where((TempleDataModel t) => _pointInMunicipality(t.latitude.toDouble(), t.longitude.toDouble(), r))
+        .where((TempleDataModel t) => pointInMunicipality(t.latitude.toDouble(), t.longitude.toDouble(), r))
         .toList();
   }
 
@@ -805,28 +795,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
 
   /////////////////////////////////////////////////////////////////////// temple
 
+  final double _eps = 1e-12;
+
   ///
-  bool _pointInMunicipality(double lat, double lng, TokyoMunicipalModel r) {
-    for (final List<List<List<double>>> rings in r.polygons) {
-      if (rings.isEmpty) {
+  bool pointInMunicipality(double lat, double lng, TokyoMunicipalModel muni) {
+    for (final List<List<List<double>>> polygon in muni.polygons) {
+      if (polygon.isEmpty) {
         continue;
       }
 
-      final List<List<double>> outer = rings.first;
+      final List<List<double>> outerRing = polygon.first;
 
-      if (_pointInRing(lat, lng, outer)) {
-        bool inHole = false;
+      if (!pointInRingOrOnEdge(lat, lng, outerRing)) {
+        continue;
+      }
 
-        for (int i = 1; i < rings.length; i++) {
-          if (_pointInRing(lat, lng, rings[i])) {
-            inHole = true;
-            break;
-          }
+      bool inAnyHole = false;
+
+      for (int i = 1; i < polygon.length; i++) {
+        final List<List<double>> holeRing = polygon[i];
+
+        if (pointInRingOrOnEdge(lat, lng, holeRing)) {
+          inAnyHole = true;
+
+          break;
         }
+      }
 
-        if (!inHole) {
-          return true;
-        }
+      if (!inAnyHole) {
+        return true;
       }
     }
 
@@ -834,22 +831,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with ControllersMixin<H
   }
 
   ///
-  bool _pointInRing(double lat, double lng, List<List<double>> ring) {
+  bool pointInRingOrOnEdge(double lat, double lng, List<List<double>> ring) {
+    for (int i = 0; i < ring.length; i++) {
+      final List<double> a = ring[i];
+
+      final List<double> b = ring[(i + 1) % ring.length];
+
+      final double aLng = a[0], aLat = a[1];
+
+      final double bLng = b[0], bLat = b[1];
+
+      if (_pointOnSegment(lat, lng, aLat, aLng, bLat, bLng)) {
+        return true;
+      }
+    }
+
+    return _rayCasting(lat, lng, ring);
+  }
+
+  ///
+  bool _rayCasting(double lat, double lng, List<List<double>> ring) {
     bool inside = false;
 
     for (int i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      final double xi = ring[i][1], yi = ring[i][0];
+      final double xiLat = ring[i][1], xiLng = ring[i][0];
 
-      final double xj = ring[j][1], yj = ring[j][0];
+      final double xjLat = ring[j][1], xjLng = ring[j][0];
 
-      final bool intersect =
-          ((xi > lat) != (xj > lat)) && (lng < (yj - yi) * (lat - xi) / ((xj - xi) == 0 ? 1e-12 : (xj - xi)) + yi);
+      final bool crossesVertically = (xiLat > lat) != (xjLat > lat);
 
-      if (intersect) {
+      if (!crossesVertically) {
+        continue;
+      }
+
+      final double t = (lat - xiLat) / (xjLat - xiLat);
+
+      final double intersectionLng = xiLng + t * (xjLng - xiLng);
+
+      if (intersectionLng > lng) {
         inside = !inside;
       }
     }
 
     return inside;
+  }
+
+  ///
+  bool _pointOnSegment(double pLat, double pLng, double aLat, double aLng, double bLat, double bLng) {
+    final double minLat = (aLat < bLat) ? aLat : bLat;
+
+    final double maxLat = (aLat > bLat) ? aLat : bLat;
+
+    final double minLng = (aLng < bLng) ? aLng : bLng;
+
+    final double maxLng = (aLng > bLng) ? aLng : bLng;
+
+    final bool withinBox =
+        (pLat >= minLat - _eps) && (pLat <= maxLat + _eps) && (pLng >= minLng - _eps) && (pLng <= maxLng + _eps);
+
+    if (!withinBox) {
+      return false;
+    }
+
+    final double vLat = bLat - aLat;
+
+    final double vLng = bLng - aLng;
+
+    final double wLat = pLat - aLat;
+
+    final double wLng = pLng - aLng;
+
+    final double cross = (vLng * wLat) - (vLat * wLng);
+
+    if (cross.abs() > 1e-10) {
+      return false;
+    }
+
+    final double vLen2 = vLat * vLat + vLng * vLng;
+
+    if (vLen2 < 1e-20) {
+      final double d2 = wLat * wLat + wLng * wLng;
+
+      return d2 < 1e-20;
+    }
+
+    final double t = (wLat * vLat + wLng * vLng) / vLen2;
+
+    return t >= -_eps && t <= 1 + _eps;
   }
 }
